@@ -14,7 +14,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.googleusercontent.apps.797574390063-a493nuf6j46aps81nm5lvjs5o905j82i"
+      
     },
     "android": {
       "adaptiveIcon": {
@@ -28,12 +30,27 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    
     "plugins": [
+      
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.797574390063-a493nuf6j46aps81nm5lvjs5o905j82i"
+        }
+      ],
+
       "expo-router"
+
+      
     ],
+
+    
+
     "experiments": {
       "typedRoutes": true
     },
+
     "extra": {
       "router": {
         "origin": false
