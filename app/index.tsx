@@ -4,10 +4,12 @@ import { VStack } from "@/components/ui/vstack";
 import {useRouter } from "expo-router";
 import { Alert, ImageBackground } from "react-native";
 
-import{ GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes, User } from '@react-native-google-signin/google-signin';
+import{ GoogleSignin, GoogleSigninButton, isSuccessResponse} from '@react-native-google-signin/google-signin';
 
 GoogleSignin.configure({
   iosClientId:"797574390063-a493nuf6j46aps81nm5lvjs5o905j82i.apps.googleusercontent.com",
+  webClientId: "797574390063-lnb0gsqg18l99ho52cmgjonnsgvhikuc.apps.googleusercontent.com"
+
   
 });
 
@@ -16,18 +18,18 @@ export default function Login(){
     const router = useRouter()
     
 
-    async function handlesSingIn(){ 
-        try {
-            await GoogleSignin.hasPlayServices()
-            const response = await GoogleSignin.signIn()
+    async function handlesSingIn() {
+      try {
+        await GoogleSignin.hasPlayServices();
+        const response = await GoogleSignin.signIn();
 
-            if (isSuccessResponse(response)) {
-                router.push("/(tabs)")
-            }
-            
-        } catch (error) {
-            console.log(error)
+        if (isSuccessResponse(response)) {
+          console.log("Logado")
         }
+
+      } catch (error) {
+        console.error("Erro ao fazer login com Google:", error);
+      }
     }
     
     return(
@@ -38,7 +40,7 @@ export default function Login(){
         style={{flex: 1}}
         >
             <VStack
-            className=" items-center justify-start mt-40 gap-10 flex-1 "
+            className=" items-center justify-between my-20 gap-10 flex-1 "
         >
             <VStack className="items-center gap-2">
                 <Text
@@ -57,10 +59,17 @@ export default function Login(){
                 Goiânia
             </Text>
             </VStack>
+
+              <Text>Entrar</Text>
            
-                <Button onPress={handlesSingIn} className="bg-lime-700 ">
-                <ButtonText>Entra</ButtonText>
-                </Button>
+                <GoogleSigninButton
+                  style={{width: 200, height: 48}}
+                  size={GoogleSigninButton.Size.Standard}
+                  color={GoogleSigninButton.Color.Dark}
+                  onPress={handlesSingIn}
+                  
+                />
+              
         </VStack>
         </ImageBackground>
     )

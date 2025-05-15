@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.googleusercontent.apps.797574390063-a493nuf6j46aps81nm5lvjs5o905j82i"
+      "bundleIdentifier": "com.ecogyn.ios"
       
     },
     "android": {
@@ -23,7 +23,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.wallison_gg.ecogyn"
+      "package": "com.ecogyn.android"
     },
     "web": {
       "bundler": "metro",
