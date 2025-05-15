@@ -27,6 +27,7 @@
         <data android:scheme="myapp"/>
         <data android:scheme="com.wallison_gg.ecogyn"/>
         <data android:scheme="exp+ecogyn"/>
+        <data android:scheme="com.ecogyn.android"/>
       </intent-filter>
     </activity>
   </application>

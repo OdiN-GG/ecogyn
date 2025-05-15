@@ -1,4 +1,4 @@
-package com.wallison_gg.ecogyn
+package com.ecogyn.android
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

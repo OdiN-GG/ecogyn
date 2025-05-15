@@ -1,4 +1,4 @@
-package com.wallison_gg.ecogyn
+package com.ecogyn.android
 
 import android.app.Application
 import android.content.res.Configuration
