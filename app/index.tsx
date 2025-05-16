@@ -4,7 +4,8 @@ import { VStack } from "@/components/ui/vstack";
 import {useRouter } from "expo-router";
 import { Alert, ImageBackground } from "react-native";
 
-import{ GoogleSignin, GoogleSigninButton, isSuccessResponse} from '@react-native-google-signin/google-signin';
+import{ GoogleSignin, GoogleSigninButton, isSuccessResponse, User} from '@react-native-google-signin/google-signin';
+import { useState } from "react";
 
 GoogleSignin.configure({
   iosClientId:"797574390063-a493nuf6j46aps81nm5lvjs5o905j82i.apps.googleusercontent.com",
@@ -15,6 +16,8 @@ GoogleSignin.configure({
 
 export default function Login(){
 
+    const [user, setUser] = useState<User | null >(null)
+
     const router = useRouter()
     
 
@@ -24,7 +27,11 @@ export default function Login(){
         const response = await GoogleSignin.signIn();
 
         if (isSuccessResponse(response)) {
-          console.log("Logado")
+
+          setUser(response.data)
+
+          console.log(user?.user)
+
         }
 
       } catch (error) {
