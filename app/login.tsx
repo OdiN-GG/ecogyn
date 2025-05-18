@@ -23,20 +23,22 @@ export default function Login(){
 
     async function handlesSingIn() {
       try {
-        await GoogleSignin.hasPlayServices();
-        const response = await GoogleSignin.signIn();
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-        if (isSuccessResponse(response)) {
+      if (isSuccessResponse(response)) {
+        setUser(response.data);
 
-          setUser(response.data)
+        // Se você quiser ver os dados:
+        console.log("Usuário logado:", response.data.user);
 
-          console.log(user?.user)
-
-        }
-
-      } catch (error) {
-        console.error("Erro ao fazer login com Google:", error);
+        // Envia para a rota desejada
+        router.replace("/(tabs)"); // Ou "/(tabs)/index" se você tiver criado esse arquivo
       }
+
+    } catch (error) {
+      console.error("Erro ao fazer login com Google:", error);
+    }
     }
     
     return(
@@ -67,13 +69,15 @@ export default function Login(){
             </Text>
             </VStack>
 
-              <Text>Entrar</Text>
            
                 <GoogleSigninButton
-                  style={{width: 200, height: 48}}
+                  style={{width: 300, height: 48}}
                   size={GoogleSigninButton.Size.Standard}
                   color={GoogleSigninButton.Color.Dark}
                   onPress={handlesSingIn}
+                  isTVSelectable
+                  
+                  
                   
                 />
               

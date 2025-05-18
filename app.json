@@ -15,42 +15,40 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ecogyn.ios"
-      
+      "bundleIdentifier": "com.ecogyn.ios",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDGSchAGNRTEVmVlUANgXGLvYL99_T2w4c"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ecogyn.android"
+      "package": "com.ecogyn.android",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDGSchAGNRTEVmVlUANgXGLvYL99_T2w4c"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    
     "plugins": [
-      
       [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.797574390063-a493nuf6j46aps81nm5lvjs5o905j82i"
         }
       ],
-
       "expo-router"
-
-      
     ],
-
-    
-
     "experiments": {
       "typedRoutes": true
     },
-
     "extra": {
       "router": {
         "origin": false
