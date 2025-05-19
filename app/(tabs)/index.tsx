@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Platform, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import MapView, { Marker, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -13,68 +14,48 @@ import FilterBar from '@/components/FilterBar';
 import { wasteTypes } from '@/data/wasteTypesData';
 import CustomMarker from '@/components/CustomMarker';
 
-// Map components and state
-let MapView: any = () => null;
-let Marker: any = () => null;
-let mapRef: React.RefObject<any> | null = null;
-let Maps: any = null;
-
-const initialRegion = {
+const initialRegion: Region = {
   latitude: -16.6799,
   longitude: -49.255,
-  latitudeDelta: 0.0922,
-  longitudeDelta: 0.0421,
+  latitudeDelta: 0.3,
+  longitudeDelta: 0.3,
 };
-
-// Only initialize map components for native platforms
-if (Platform.OS !== 'web') {
-  Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-  mapRef = React.createRef();
-}
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const [selectedPoint, setSelectedPoint] = useState<EcoPoint | null>(null);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [currentRegion, setCurrentRegion] = useState(initialRegion);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [filteredPoints, setFilteredPoints] = useState(ecoPoints);
+  const mapRef = useRef<MapView>(null);
 
-  // Request location permissions and get user location
+  const [selectedPoint, setSelectedPoint] = useState<EcoPoint | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [currentRegion, setCurrentRegion] = useState<Region>(initialRegion);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [filteredPoints, setFilteredPoints] = useState<EcoPoint[]>(ecoPoints);
+
+  // Localização do usuário
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
       if (status === 'granted') {
         const location = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = location.coords;
-        
-        setUserLocation({
-          latitude,
-          longitude,
-        });
-        
+
+        setUserLocation({ latitude, longitude });
         setCurrentRegion({
           latitude,
           longitude,
-          latitudeDelta: 5.0010,
-          longitudeDelta: 5.0010,
+          latitudeDelta: 5.001,
+          longitudeDelta: 5.001,
         });
       }
     })();
   }, []);
 
-  // Abre o Modal com o Eco Ponto com os parametros selecionado
+  // Abrir eco ponto da rota
   useEffect(() => {
-    if (params.id && Platform.OS !== 'web') {
+    if (params.id) {
       const point = ecoPoints.find(p => p.id === params.id);
-      if (point && mapRef?.current) {
+      if (point && mapRef.current) {
         setSelectedPoint(point);
         mapRef.current.animateToRegion({
           latitude: point.latitude,
@@ -82,18 +63,17 @@ export default function MapScreen() {
           latitudeDelta: 0.1,
           longitudeDelta: 0.1,
         });
-
-        router.replace('/(tabs)'); // Limpa os parametros recebidos da rota List
+        router.replace('/(tabs)');
       }
     }
   }, [params]);
 
-  // Filter eco-points based on selected waste types
+  // Filtro por tipo de resíduo
   useEffect(() => {
     if (selectedFilters.length === 0) {
       setFilteredPoints(ecoPoints);
     } else {
-      const filtered = ecoPoints.filter((point) => 
+      const filtered = ecoPoints.filter((point) =>
         point.wasteTypes.some(waste => selectedFilters.includes(waste.id))
       );
       setFilteredPoints(filtered);
@@ -109,32 +89,30 @@ export default function MapScreen() {
   };
 
   const centerOnUserLocation = () => {
-    if (Platform.OS !== 'web' && userLocation && mapRef?.current) {
+    if (userLocation && mapRef.current) {
       mapRef.current.animateToRegion({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
         latitudeDelta: 0.1,
-        longitudeDelta: 0.,
+        longitudeDelta: 0.1,
       });
     }
   };
 
   const toggleFilter = (filterId: string) => {
-    setSelectedFilters(prev => 
-      prev.includes(filterId) 
-        ? prev.filter(id => id !== filterId) 
+    setSelectedFilters(prev =>
+      prev.includes(filterId)
+        ? prev.filter(id => id !== filterId)
         : [...prev, filterId]
     );
   };
 
- 
-  // Native platform render with map
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={Platform.OS === 'android' ? 'google' : undefined}
+        provider="google"
         initialRegion={currentRegion}
         showsUserLocation
         showsMyLocationButton={false}
@@ -142,13 +120,10 @@ export default function MapScreen() {
         showsScale
         onRegionChangeComplete={setCurrentRegion}
       >
-        {filteredPoints.map((point) => (
+        {filteredPoints.map(point => (
           <Marker
             key={point.id}
-            coordinate={{
-              latitude: point.latitude,
-              longitude: point.longitude,
-            }}
+            coordinate={{ latitude: point.latitude, longitude: point.longitude }}
             onPress={() => handleMarkerPress(point)}
           >
             <CustomMarker point={point} />
@@ -157,19 +132,19 @@ export default function MapScreen() {
       </MapView>
 
       <MapHeader style={{ top: insets.top + 8 }} />
-      
-      <FilterBar 
-        filters={wasteTypes} 
-        selectedFilters={selectedFilters} 
+
+      <FilterBar
+        filters={wasteTypes}
+        selectedFilters={selectedFilters}
         onToggleFilter={toggleFilter}
-        style={{ top: insets.top + 72 }}
+        style={{ top: insets.top + 100 }}
       />
-      
+
       <MapControls
         onCenterLocation={centerOnUserLocation}
         style={{ bottom: insets.bottom + (selectedPoint ? 270 : 16) }}
       />
-      
+
       <LocationDetail
         point={selectedPoint}
         onClose={handleCloseDetail}
@@ -188,16 +163,5 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
-  },
-  webPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  webPlaceholderText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
   },
 });

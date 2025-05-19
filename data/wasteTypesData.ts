@@ -27,8 +27,8 @@ export const wasteTypes: WasteType[] = [
     icon: 'droplet',
   },
   {
-    id: 'organic',
-    name: 'Orgânicos',
+    id: 'poda',
+    name: 'Resíduos de poda',
     color: Colors.wasteOrganic,
     icon: 'leaf',
   },
