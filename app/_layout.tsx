@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { AuthProvider, useAuth } from '../app/contexts/AuthContext';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
 function RootLayoutNav() {
   const { user, isInitialized } = useAuth();

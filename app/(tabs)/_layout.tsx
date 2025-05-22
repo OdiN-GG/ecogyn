@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { MapPin, List, Info } from 'lucide-react-native';
+import { MapPin, List, Info, User } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import Colors from '@/constants/Colors';
 import { View } from 'react-native';
@@ -43,6 +43,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <View style={styles.tabIconContainer}>
               <Info size={size} color={color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color, size }) => (
+            <View style={styles.tabIconContainer}>
+              <User size={size} color={color} />
             </View>
           ),
         }}

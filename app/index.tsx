@@ -1,20 +1,18 @@
 import { Button, ButtonText } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import {useRouter } from "expo-router";
-import {ImageBackground } from "react-native";
-import { GoogleSignin, GoogleSigninButton, isSuccessResponse, User} from '@react-native-google-signin/google-signin';
-import { useState } from "react";
-
-
+import { useRouter } from "expo-router";
+import { ImageBackground } from "react-native";
+import { GoogleSignin, GoogleSigninButton, isSuccessResponse } from '@react-native-google-signin/google-signin';
+import { useAuth } from "../contexts/AuthContext";
 
 GoogleSignin.configure({
   iosClientId:"797574390063-a493nuf6j46aps81nm5lvjs5o905j82i.apps.googleusercontent.com",
   webClientId: "797574390063-lnb0gsqg18l99ho52cmgjonnsgvhikuc.apps.googleusercontent.com"
 });
 
-export default function Login(){
-    const [user, setUser] = useState<User | null>(null);
+export default function Login() {
+    const { signIn } = useAuth();
     const router = useRouter();
 
     async function handleSignIn() {
@@ -23,8 +21,14 @@ export default function Login(){
         const response = await GoogleSignin.signIn();
 
         if (isSuccessResponse(response)) {
-          setUser(response.data);
-          console.log("Usuário logado:", response.data.user);
+          const userData = {
+            id: response.data.user.id,
+            email: response.data.user.email || '',
+            name: response.data.user.name || 'Usuário',
+            photo: response.data.user.photo || undefined
+          };
+          
+          await signIn(userData);
           router.replace("/(tabs)");
         }
       } catch (error) {
