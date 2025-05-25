@@ -1,8 +1,6 @@
 export interface WasteType {
   id: string;
-  name: string;
-  color: string;
-  icon: string;
+  nameType: string;
 }
 
 export interface EcoPoint {
@@ -16,8 +14,6 @@ export interface EcoPoint {
   wasteTypes: WasteType[];
   description: string;
   openingHours: string;
-  phone: string;
-  website?: string;
   imageUrl: string;
   isMunicipal: boolean;
 }

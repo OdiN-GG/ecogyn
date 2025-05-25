@@ -6,27 +6,55 @@ import {
   FlatList, 
   TouchableOpacity, 
   Image,
-  TextInput 
+  TextInput,
+  ActivityIndicator 
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 import Colors from '@/constants/Colors';
-import { ecoPoints } from '@/data/ecoPointsData';
-import { wasteTypes } from '@/data/wasteTypesData';
 import WasteTypeChip from '@/components/WasteTypeChip';
-import { EcoPoint } from '@/types/ecoPoint';
+import { EcoPoint, WasteType } from '@/types/ecoPoint';
+import { getEcoPoints, getWasteTypes } from '@/services/api';
 
 export default function ListScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPoints, setFilteredPoints] = useState(ecoPoints);
+  const [filteredPoints, setFilteredPoints] = useState<EcoPoint[]>([]);
+  const [allPoints, setAllPoints] = useState<EcoPoint[]>([]);
+  const [wasteTypes, setWasteTypes] = useState<WasteType[]>([]);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Buscar dados da API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [points, types] = await Promise.all([
+          getEcoPoints(),
+          getWasteTypes()
+        ]);
+        setAllPoints(points);
+        setFilteredPoints(points);
+        setWasteTypes(types);
+        setError(null);
+      } catch (err) {
+        setError('Erro ao carregar os dados');
+        console.error('Erro ao buscar dados:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    let filtered = ecoPoints; // Dados dos Eco Pontos
+    let filtered = allPoints;
     
     // Apply search filter
     if (searchQuery.trim() !== '') {
@@ -40,23 +68,21 @@ export default function ListScreen() {
     // Apply waste type filters
     if (selectedFilters.length > 0) {
       filtered = filtered.filter(point => 
-        point.wasteTypes.some(waste => selectedFilters.includes(waste.id))
+        point.wasteTypes.some(waste => selectedFilters.includes(waste.name))
       );
     }
     
     setFilteredPoints(filtered);
-  }, [searchQuery, selectedFilters]);
+  }, [searchQuery, selectedFilters, allPoints]);
 
-// Filtrar Eco pontos por categoria
   const toggleFilter = (filterId: string) => { 
     setSelectedFilters(prev => 
       prev.includes(filterId) 
-        ? prev.filter(id => id !== filterId)  // Remove o filtro se já estiver na lista
-        : [...prev, filterId]                 // Adiciona o filtro se ainda não estiver
+        ? prev.filter(id => id !== filterId)
+        : [...prev, filterId]
     );
   };
 
-// Botão de limpa o Input
   const clearSearch = () => {
     setSearchQuery('');
   };
@@ -71,6 +97,22 @@ export default function ListScreen() {
       }
     });
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -101,13 +143,13 @@ export default function ListScreen() {
           data={wasteTypes}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.name}
           style={styles.filtersContainer}
           renderItem={({ item }) => (
             <WasteTypeChip
               wasteType={item}
-              isSelected={selectedFilters.includes(item.id)}
-              onPress={() => toggleFilter(item.id)}
+              isSelected={selectedFilters.includes(item.name)}
+              onPress={() => toggleFilter(item.name)}
               style={styles.filterChip}
             />
           )}
@@ -130,7 +172,7 @@ export default function ListScreen() {
               
               <View style={styles.wasteTypesContainer}>
                 {item.wasteTypes.slice(0, 3).map(wasteType => (
-                  <View key={wasteType.id} style={styles.wasteTypeTag}>
+                  <View key={wasteType.name} style={styles.wasteTypeTag}>
                     <Text style={styles.wasteTypeText}>{wasteType.name}</Text>
                   </View>
                 ))}
@@ -157,6 +199,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    color: Colors.error,
+    textAlign: 'center',
+    padding: 16,
   },
   header: {
     paddingHorizontal: 16,

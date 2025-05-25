@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
 function RootLayoutNav() {
   const { user, isInitialized } = useAuth();
@@ -36,7 +36,7 @@ function RootLayoutNav() {
       <Stack
         screenOptions={{headerShown: false}}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack>
     </GluestackUIProvider>
   );

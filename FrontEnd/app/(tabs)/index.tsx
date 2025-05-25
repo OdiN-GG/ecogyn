@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,11 +8,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import MapHeader from '@/components/MapHeader';
 import LocationDetail from '@/components/LocationDetail';
 import MapControls from '@/components/MapControls';
-import { ecoPoints } from '@/data/ecoPointsData';
-import { EcoPoint } from '@/types/ecoPoint';
+import { EcoPoint, WasteType } from '@/types/ecoPoint';
 import FilterBar from '@/components/FilterBar';
-import { wasteTypes } from '@/data/wasteTypesData';
 import CustomMarker from '@/components/CustomMarker';
+import { getEcoPoints, getWasteTypes } from '@/services/api';
 
 const initialRegion: Region = {
   latitude: -16.6799,
@@ -30,7 +29,35 @@ export default function MapScreen() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [currentRegion, setCurrentRegion] = useState<Region>(initialRegion);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [filteredPoints, setFilteredPoints] = useState<EcoPoint[]>(ecoPoints);
+  const [filteredPoints, setFilteredPoints] = useState<EcoPoint[]>([]);
+  const [allPoints, setAllPoints] = useState<EcoPoint[]>([]);
+  const [wasteTypes, setWasteTypes] = useState<WasteType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Buscar eco pontos e tipos de resíduo da API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [points, types] = await Promise.all([
+          getEcoPoints(),
+          getWasteTypes()
+        ]);
+        setAllPoints(points);
+        setFilteredPoints(points);
+        setWasteTypes(types);
+        setError(null);
+      } catch (err) {
+        setError('Erro ao carregar os dados');
+        console.error('Erro ao buscar dados:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Localização do usuário
   useEffect(() => {
@@ -54,7 +81,7 @@ export default function MapScreen() {
   // Abrir eco ponto da rota
   useEffect(() => {
     if (params.id) {
-      const point = ecoPoints.find(p => p.id === params.id);
+      const point = allPoints.find(p => p.id === params.id);
       if (point && mapRef.current) {
         setSelectedPoint(point);
         mapRef.current.animateToRegion({
@@ -66,19 +93,19 @@ export default function MapScreen() {
         router.replace('/(tabs)');
       }
     }
-  }, [params]);
+  }, [params, allPoints]);
 
   // Filtro por tipo de resíduo
   useEffect(() => {
     if (selectedFilters.length === 0) {
-      setFilteredPoints(ecoPoints);
+      setFilteredPoints(allPoints);
     } else {
-      const filtered = ecoPoints.filter((point) =>
-        point.wasteTypes.some(waste => selectedFilters.includes(waste.id))
+      const filtered = allPoints.filter((point) =>
+        point.wasteTypes.some(waste => selectedFilters.includes(waste.name))
       );
       setFilteredPoints(filtered);
     }
-  }, [selectedFilters]);
+  }, [selectedFilters, allPoints]);
 
   const handleMarkerPress = (point: EcoPoint) => {
     setSelectedPoint(point);
@@ -151,6 +178,18 @@ export default function MapScreen() {
         userLocation={userLocation}
         style={{ bottom: insets.bottom }}
       />
+
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2E8B57" />
+        </View>
+      )}
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -163,5 +202,28 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  errorContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: '#F44336',
+  },
+  errorText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
