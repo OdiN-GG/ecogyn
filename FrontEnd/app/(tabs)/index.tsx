@@ -40,17 +40,25 @@ export default function MapScreen() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        console.log('🔄 Iniciando busca de dados...');
+        
         const [points, types] = await Promise.all([
           getEcoPoints(),
           getWasteTypes()
         ]);
+        
+        console.log('✅ Dados carregados com sucesso');
+        console.log('📊 Total de pontos:', points.length);
+        console.log('🗑️ Total de tipos de resíduo:', types.length);
+        
         setAllPoints(points);
         setFilteredPoints(points);
         setWasteTypes(types);
-        setError(null);
       } catch (err) {
-        setError('Erro ao carregar os dados');
-        console.error('Erro ao buscar dados:', err);
+        console.error('❌ Erro ao buscar dados:', err);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar os dados');
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +109,7 @@ export default function MapScreen() {
       setFilteredPoints(allPoints);
     } else {
       const filtered = allPoints.filter((point) =>
-        point.wasteTypes.some(waste => selectedFilters.includes(waste.name))
+        point.wasteTypes.some(waste => selectedFilters.includes(waste.nameType))
       );
       setFilteredPoints(filtered);
     }
@@ -182,12 +190,14 @@ export default function MapScreen() {
       {isLoading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2E8B57" />
+          <Text style={styles.loadingText}>Carregando dados...</Text>
         </View>
       )}
 
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorSubText}>Toque para tentar novamente</Text>
         </View>
       )}
     </View>
@@ -225,5 +235,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     fontSize: 16,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#2E8B57',
+  },
+  errorSubText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 4,
   },
 });
