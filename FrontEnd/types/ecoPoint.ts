@@ -1,19 +1,17 @@
 export interface WasteType {
-  id: string;
+  _id: string;
   nameType: string;
+  cor: string;
 }
 
 export interface EcoPoint {
-  id: string;
+  _id: string;
   name: string;
   address: string;
-  city: string;
-  state: string;
   latitude: number;
   longitude: number;
   wasteTypes: WasteType[];
   description: string;
   openingHours: string;
   imageUrl: string;
-  isMunicipal: boolean;
 }

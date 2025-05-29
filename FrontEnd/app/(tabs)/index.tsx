@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text, Platform } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +11,8 @@ import MapControls from '@/components/MapControls';
 import { EcoPoint, WasteType } from '@/types/ecoPoint';
 import FilterBar from '@/components/FilterBar';
 import CustomMarker from '@/components/CustomMarker';
-import { getEcoPoints, getWasteTypes } from '@/services/api';
+import { ecoPointService } from '@/services/ecoPointService';
+import { wasteTypeService } from '@/services/wasteTypeService';
 
 const initialRegion: Region = {
   latitude: -16.6799,
@@ -45,16 +46,16 @@ export default function MapScreen() {
         console.log('🔄 Iniciando busca de dados...');
         
         const [points, types] = await Promise.all([
-          getEcoPoints(),
-          getWasteTypes()
+          ecoPointService.getAll(),
+          wasteTypeService.getAll()
         ]);
         
         console.log('✅ Dados carregados com sucesso');
         console.log('📊 Total de pontos:', points.length);
-        console.log('🗑️ Total de tipos de resíduo:', types.length);
+        console.log('🗑️ Tipos de resíduo:', types);
         
-        setAllPoints(points);
-        setFilteredPoints(points);
+        setAllPoints(points as EcoPoint[]);
+        setFilteredPoints(points as EcoPoint[]);
         setWasteTypes(types);
       } catch (err) {
         console.error('❌ Erro ao buscar dados:', err);
@@ -89,7 +90,7 @@ export default function MapScreen() {
   // Abrir eco ponto da rota
   useEffect(() => {
     if (params.id) {
-      const point = allPoints.find(p => p.id === params.id);
+      const point = allPoints.find(p => p._id === params.id);
       if (point && mapRef.current) {
         setSelectedPoint(point);
         mapRef.current.animateToRegion({
@@ -157,7 +158,7 @@ export default function MapScreen() {
       >
         {filteredPoints.map(point => (
           <Marker
-            key={point.id}
+            key={point._id}
             coordinate={{ latitude: point.latitude, longitude: point.longitude }}
             onPress={() => handleMarkerPress(point)}
           >
@@ -169,7 +170,11 @@ export default function MapScreen() {
       <MapHeader style={{ top: insets.top + 8 }} />
 
       <FilterBar
-        filters={wasteTypes}
+        filters={wasteTypes.map(type => ({
+          _id: type._id,
+          nameType: type.nameType,
+          cor: type.cor
+        }))}
         selectedFilters={selectedFilters}
         onToggleFilter={toggleFilter}
         style={{ top: insets.top + 100 }}

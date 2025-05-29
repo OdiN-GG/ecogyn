@@ -11,7 +11,7 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (isInitialized) {
-      if (user) {
+      if (!user) {
         router.replace('/(tabs)');
       } else {
         router.replace('/');

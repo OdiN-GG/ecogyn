@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
-import { WasteType } from '@/types/ecoPoint';
+import { WasteType } from "../types/ecoPoint";
 import WasteTypeChip from './WasteTypeChip';
 
 interface FilterBarProps {
@@ -22,12 +22,12 @@ export default function FilterBar({
         data={filters}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <WasteTypeChip
             wasteType={item}
-            isSelected={selectedFilters.includes(item.id)}
-            onPress={() => onToggleFilter(item.id)}
+            isSelected={selectedFilters.includes(item._id)}
+            onPress={() => onToggleFilter(item._id)}
             style={styles.chip}
           />
         )}

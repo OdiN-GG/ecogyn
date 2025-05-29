@@ -66,7 +66,7 @@ export default function Login() {
                     style={{width: 300, height: 48}}
                     size={GoogleSigninButton.Size.Standard}
                     color={GoogleSigninButton.Color.Dark}
-                    onPress={handleSignIn}
+                    onPress={() => router.replace("/(tabs)")}
                     isTVSelectable
                 />
             </VStack>

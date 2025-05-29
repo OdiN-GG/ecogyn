@@ -20,7 +20,7 @@ export default function WasteTypeChip({
     <TouchableOpacity
       style={[
         styles.container,
-        { backgroundColor: isSelected ? wasteType.color : 'white' },
+        { backgroundColor: isSelected ? wasteType.cor : 'white' },
         style
       ]}
       onPress={onPress}
@@ -29,10 +29,10 @@ export default function WasteTypeChip({
       <Text
         style={[
           styles.text,
-          { color: isSelected ? 'white' : wasteType.color }
+          { color: isSelected ? 'white' : wasteType.cor }
         ]}
       >
-        {wasteType.name}
+        {wasteType.nameType}
       </Text>
     </TouchableOpacity>
   );

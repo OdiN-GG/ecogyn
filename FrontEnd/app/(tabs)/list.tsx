@@ -16,7 +16,8 @@ import { useRouter } from 'expo-router';
 import Colors from '@/constants/Colors';
 import WasteTypeChip from '@/components/WasteTypeChip';
 import { EcoPoint, WasteType } from '@/types/ecoPoint';
-import { getEcoPoints, getWasteTypes } from '@/services/api';
+import { ecoPointService } from '@/services/ecoPointService';
+import { wasteTypeService } from '@/services/wasteTypeService';
 
 export default function ListScreen() {
   const insets = useSafeAreaInsets();
@@ -34,17 +35,19 @@ export default function ListScreen() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log('Iniciando busca de dados...');
         const [points, types] = await Promise.all([
-          getEcoPoints(),
-          getWasteTypes()
+          ecoPointService.getAll(),
+          wasteTypeService.getAll()
         ]);
+        console.log('Dados recebidos:', { points, types });
         setAllPoints(points);
         setFilteredPoints(points);
         setWasteTypes(types);
         setError(null);
       } catch (err) {
-        setError('Erro ao carregar os dados');
         console.error('Erro ao buscar dados:', err);
+        setError('Erro ao carregar os dados');
       } finally {
         setIsLoading(false);
       }
@@ -54,22 +57,27 @@ export default function ListScreen() {
   }, []);
 
   useEffect(() => {
-    let filtered = allPoints;
+    let filtered = allPoints || [];
     
     // Apply search filter
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(point => 
-        point.name.toLowerCase().includes(query) || 
-        point.address.toLowerCase().includes(query)
+        point?.name?.toLowerCase().includes(query) || 
+        point?.address?.toLowerCase().includes(query)
       );
     }
     
     // Apply waste type filters
     if (selectedFilters.length > 0) {
-      filtered = filtered.filter(point => 
-        point.wasteTypes.some(waste => selectedFilters.includes(waste.name))
-      );
+      filtered = filtered.filter(point => {
+        if (!point?.wasteTypes || !Array.isArray(point.wasteTypes)) {
+          return false;
+        }
+        return point.wasteTypes.some(waste => 
+          waste && waste.nameType && selectedFilters.includes(waste.nameType)
+        );
+      });
     }
     
     setFilteredPoints(filtered);
@@ -93,7 +101,7 @@ export default function ListScreen() {
       params: { 
         lat: point.latitude.toString(),
         lng: point.longitude.toString(),
-        id: point.id
+        id: point._id
       }
     });
   };
@@ -143,13 +151,13 @@ export default function ListScreen() {
           data={wasteTypes}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.name}
+          keyExtractor={(item) => item.nameType}
           style={styles.filtersContainer}
           renderItem={({ item }) => (
             <WasteTypeChip
               wasteType={item}
-              isSelected={selectedFilters.includes(item.name)}
-              onPress={() => toggleFilter(item.name)}
+              isSelected={selectedFilters.includes(item.nameType)}
+              onPress={() => toggleFilter(item.nameType)}
               style={styles.filterChip}
             />
           )}
@@ -158,7 +166,7 @@ export default function ListScreen() {
       
       <FlatList
         data={filteredPoints}
-        keyExtractor={(item) => item.id}
+        keyExtractor ={(item) => item._id || ''}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <TouchableOpacity 
@@ -171,12 +179,12 @@ export default function ListScreen() {
               <Text style={styles.cardAddress}>{item.address}</Text>
               
               <View style={styles.wasteTypesContainer}>
-                {item.wasteTypes.slice(0, 3).map(wasteType => (
-                  <View key={wasteType.name} style={styles.wasteTypeTag}>
-                    <Text style={styles.wasteTypeText}>{wasteType.name}</Text>
+                {item.wasteTypes?.slice(0, 3).map(wasteType => (
+                  <View key={wasteType.nameType} style={styles.wasteTypeTag}>
+                    <Text style={styles.wasteTypeText}>{wasteType.nameType}</Text>
                   </View>
                 ))}
-                {item.wasteTypes.length > 3 && (
+                {item.wasteTypes && item.wasteTypes.length > 3 && (
                   <Text style={styles.moreText}>+{item.wasteTypes.length - 3}</Text>
                 )}
               </View>
